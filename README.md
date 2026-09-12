@@ -6,8 +6,11 @@
 
 🥇 PS5 &nbsp;·&nbsp; 🥈 MSI Gaming Monitor &nbsp;·&nbsp; 1,430 participants
 
+### 🌐 [Live Demo → smartshop-agent.onrender.com](https://smartshop-agent.onrender.com)
+
 [![Built with Anakin MCP](https://img.shields.io/badge/Built%20with-Anakin%20MCP-6c63ff?style=flat-square)](https://anakin.io)
 [![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=flat-square&logo=node.js)](https://nodejs.org)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-onrender.com-46E3B7?style=flat-square)](https://smartshop-agent.onrender.com)
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue?style=flat-square)](LICENSE)
 
 </div>
