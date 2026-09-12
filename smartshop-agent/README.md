@@ -1,9 +1,39 @@
 # 🛍️ SmartShop AI Agent
 
-> **Anakin Forge Hackathon Submission · Sept 7–14, 2026**
-> Prizes: 🥇 PS5 · 🥈 MSI Gaming Monitor
+<div align="center">
 
-An autonomous AI shopping agent that takes a plain-English query, searches Amazon and Walmart **live**, reasons through prices / ratings / reviews using a multi-step pipeline, generates an **AI-powered recommendation**, and can autonomously **add the best pick to your cart** using a real cloud browser.
+**Anakin Forge Hackathon · Sept 7–14, 2026**
+
+🥇 PS5 &nbsp;·&nbsp; 🥈 MSI Gaming Monitor &nbsp;·&nbsp; 1,430 participants
+
+[![Built with Anakin MCP](https://img.shields.io/badge/Built%20with-Anakin%20MCP-6c63ff?style=flat-square)](https://anakin.io)
+[![Node.js](https://img.shields.io/badge/Node.js-20-339933?style=flat-square&logo=node.js)](https://nodejs.org)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue?style=flat-square)](LICENSE)
+
+</div>
+
+---
+
+## The Problem
+
+Finding the best product across Amazon and Walmart manually takes **30+ minutes** of tab-switching, price-checking, review-reading, and regretful guessing — and you still end up unsure if you made the right call.
+
+Most people either overpay, buy something with hidden bad reviews, or give up and go with whatever Amazon pushes to the top.
+
+## The Solution
+
+**SmartShop is an AI agent that does all of it for you — in under 15 seconds.**
+
+You type a plain-English query like *"best laptop under $800 for coding"*. The agent:
+
+1. Searches Amazon **and** Walmart simultaneously with live Wire API calls
+2. Enriches the top results with real product details and customer reviews
+3. Scores every product across 5 dimensions — value, rating, reviews, features, stock
+4. Reads live editorial web reviews for the top pick
+5. Generates a structured AI recommendation with pros, cons, and a verdict
+6. Hands you an **"Add to Cart" button** that acts autonomously via a cloud browser
+
+No tab-switching. No guessing. One query, one answer, one action.
 
 ---
 
@@ -14,6 +44,39 @@ An autonomous AI shopping agent that takes a plain-English query, searches Amazo
 | ✅ **Browse & read live web content** | Steps 2 + 4: real-time Wire API calls to Amazon (`am_search_products`, `am_product_details`) and Walmart (`walmart_search`, `walmart_reviews`). Step 6: Anakin `search` tool fetches live editorial web reviews for the top product. |
 | ✅ **Reason through multi-step tasks** | 6-step autonomous pipeline: parse intent → parallel search → normalize → enrich (with live details + reviews) → score/rank (5-dimension scoring model) → AI deep-research summary. Every step depends on the previous one's output. |
 | ✅ **Take real action** | Step 6 fires Anakin `deep_research` to generate a structured AI recommendation. The UI exposes per-product action buttons: Amazon opens the `/gp/aws/cart/add` pre-filled cart URL; the `browser_task` MCP tool drives a real cloud Chromium instance to navigate the product page and attempt an add-to-cart — all without human clicks. |
+
+---
+
+## See it in action
+
+> **Query:** `"best laptop under $800 for coding"`
+
+```
+🔍 Parsing your query…
+   ↳ Keywords: laptop for coding  |  Budget: $800  |  Category: electronics
+
+🛒 Searching Amazon & Walmart live…
+   ↳ 12 Amazon products  +  11 Walmart products found
+
+🔬 Enriching top products with live details & reviews…
+   ↳ Fetched specs, pricing, and review counts for top 8 candidates
+
+🧠 Scoring and ranking 23 products…
+   ↳ 5-dimension model: value · rating · reviews · features · stock
+
+🌐 Reading live web reviews for top pick…
+   ↳ 4 editorial sources scraped
+
+🤖 AI recommendation generated
+   ↳ "The Acer Aspire 5 delivers the best value for coding at $649..."
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ 🥇 Acer Aspire 5 A515        $649  Score: 84/100
+ 🥈 Lenovo IdeaPad 3           $729  Score: 79/100
+ 🥉 ASUS VivoBook 15           $699  Score: 76/100
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  Completed in 14.2s  ·  Powered by Anakin MCP
+```
 
 ---
 
@@ -111,11 +174,23 @@ npm install
 
 ### 2. Configure
 
+```bash
+cp .env.example .env
 ```
-ANAKIN_API_KEY=ask_your_key_here
+
+Edit `.env` — add up to 4 API keys for automatic rotation when one hits its limit:
+
+```env
 ANAKIN_MCP_URL=https://mcp.anakin.io/mcp
 PORT=3000
+
+ANAKIN_API_KEY_1=ask_your_first_key_here
+ANAKIN_API_KEY_2=ask_your_second_key_here   # optional
+ANAKIN_API_KEY_3=ask_your_third_key_here    # optional
+ANAKIN_API_KEY_4=ask_your_fourth_key_here   # optional
 ```
+
+> Get free API keys at **[anakin.io/dashboard](https://anakin.io/dashboard)**. Each key gives 300 free credits (~10 full searches). With 4 keys you get ~40 searches before any key rotates.
 
 ### 3. Run the web UI
 
@@ -223,6 +298,27 @@ smartshop-agent/
 ├── package.json
 └── README.md
 ```
+
+---
+
+## Automatic API key rotation
+
+SmartShop manages a pool of up to 4 Anakin API keys. When one hits its rate or credit limit, the agent switches to the next key instantly — no failed searches, no manual intervention.
+
+```
+Key #1 hits limit → mark cooling (60s) → switch to Key #2 instantly
+Key #2 hits limit → mark cooling (60s) → switch to Key #3 instantly
+Key #3 recovers  → back in the pool automatically
+```
+
+Check pool status at any time:
+```
+GET http://localhost:3000/api/keys/status
+```
+
+---
+
+> *"SmartShop doesn't replace human judgment — it amplifies it. In the time it takes to open a second browser tab, the agent has already read the web, crunched the numbers, and handed you a decision backed by data. That's what agentic AI should feel like: invisible, fast, and actually useful."*
 
 ---
 
