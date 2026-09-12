@@ -28,7 +28,7 @@ const client                = require('../api/anakinClient');
 const { EventEmitter }      = require('events');
 
 const DEFAULT_SEARCH_LIMIT = 12;
-const ENRICH_TOP_N         = 4;   // enrich this many Walmart/Amazon items with detail + reviews
+const ENRICH_TOP_N = 2;   // enrich top 2 per platform to save credits (was 4)
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Public API
