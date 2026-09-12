@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartShop AI Agent — Anakin Forge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0c12;
+      --surface:   #13161f;
+      --surface2:  #1c2030;
+      --surface3:  #242840;
+      --border:    #2a2f45;
+      --border2:   #363d58;
+      --accent:    #6c63ff;
+      --accent2:   #4fc3f7;
+      --accent3:   #a78bfa;
+      --text:      #e8eaf2;
+      --muted:     #7b829a;
+      --muted2:    #555d78;
+      --amazon:    #ff9900;
+      --walmart:   #0071ce;
+      --gold:      #ffd700;
+      --silver:    #b0b8c8;
+      --bronze:    #cd7f32;
+      --green:     #34d399;
+      --red:       #f87171;
+      --yellow:    #fbbf24;
+      --r:         14px;
+      --r-sm:      8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* ── Animated background grid ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Header ── */
+    header {
+      position: relative;
+      z-index: 10;
+      background: linear-gradient(180deg, rgba(19,22,31,.98) 0%, rgba(10,12,18,.95) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .logo-wrap {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .header-text h1 {
+      font-size: 18px; font-weight: 700;
+      background: linear-gradient(90deg, #fff 0%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .header-text p { font-size: 12px; color: var(--muted); margin-top: 1px; }
+    .header-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .badge {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 5px 12px; font-size: 11px; color: var(--muted);
+    }
+    .badge strong { color: var(--accent2); }
+    .pipeline-badge {
+      background: rgba(108,99,255,.12); border: 1px solid rgba(108,99,255,.3);
+      border-radius: 20px; padding: 5px 12px; font-size: 11px; color: var(--accent3);
+    }
+
+    /* ── Main ── */
+    main {
+      position: relative; z-index: 1;
+      max-width: 1140px; margin: 36px auto; padding: 0 24px;
+    }
+
+    /* ── Pipeline diagram ── */
+    .pipeline {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px 20px; margin-bottom: 28px;
+      display: flex; align-items: center; gap: 0; overflow-x: auto;
+    }
+    .pipe-step {
+      display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+    }
+    .pipe-node {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 14px;
+      font-size: 12px; font-weight: 500; color: var(--muted);
+      white-space: nowrap; transition: all .3s;
+    }
+    .pipe-node.active  { border-color: var(--accent); color: var(--accent2); background: rgba(108,99,255,.08); }
+    .pipe-node.done    { border-color: var(--green);  color: var(--green);   background: rgba(52,211,153,.07); }
+    .pipe-arrow { color: var(--border2); font-size: 16px; padding: 0 4px; flex-shrink: 0; }
+
+    /* ── Search box ── */
+    .search-section {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 28px 32px; margin-bottom: 24px;
+    }
+    .search-label {
+      font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 14px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .search-label small { font-weight: 400; color: var(--muted); font-size: 12px; }
+    .search-row { display: flex; gap: 10px; }
+    #queryInput {
+      flex: 1; background: var(--bg); border: 1px solid var(--border2);
+      border-radius: var(--r-sm); color: var(--text); font-size: 15px;
+      font-family: inherit; padding: 13px 18px; outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    #queryInput:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,.12);
+    }
+    #queryInput::placeholder { color: var(--muted2); }
+    #searchBtn {
+      background: linear-gradient(135deg, var(--accent) 0%, #5a55e8 100%);
+      border: none; border-radius: var(--r-sm); color: #fff;
+      font-size: 14px; font-weight: 600; font-family: inherit;
+      padding: 0 26px; cursor: pointer; white-space: nowrap;
+      transition: opacity .2s, transform .1s;
+      box-shadow: 0 4px 14px rgba(108,99,255,.35);
+    }
+    #searchBtn:hover:not(:disabled) { opacity: .92; }
+    #searchBtn:active:not(:disabled) { transform: scale(.97); }
+    #searchBtn:disabled { opacity: .45; cursor: not-allowed; box-shadow: none; }
+    .examples { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+    .chip {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 11px; color: var(--muted);
+      padding: 5px 12px; cursor: pointer; transition: all .2s;
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent3); background: rgba(108,99,255,.08); }
+
+    /* ── Progress ── */
+    #progressSection {
+      display: none; background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 20px 24px; margin-bottom: 20px;
+    }
+    .progress-header { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+    #progressLog { display: flex; flex-direction: column; gap: 7px; }
+    .log-line { font-size: 13px; display: flex; align-items: center; gap: 9px; }
+    .log-line.active { color: var(--text); }
+    .log-line.done   { color: var(--green); }
+    .log-line.warn   { color: var(--yellow); }
+    .spin {
+      width: 13px; height: 13px; border-radius: 50%;
+      border: 2px solid var(--border2); border-top-color: var(--accent);
+      animation: spin .6s linear infinite; flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Intent card ── */
+    #intentCard {
+      display: none; background: var(--surface2); border: 1px solid var(--border);
+      border-left: 3px solid var(--accent); border-radius: var(--r-sm);
+      padding: 12px 18px; margin-bottom: 18px; font-size: 12px; color: var(--muted);
+    }
+    .intent-grid { display: flex; flex-wrap: wrap; gap: 16px; }
+    .intent-item strong { color: var(--text); display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 1px; }
+    .intent-item span { color: var(--accent2); font-weight: 500; }
+
+    /* ── Section headers ── */
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .section-title { font-size: 16px; font-weight: 700; color: var(--text); }
+    .section-meta  { font-size: 12px; color: var(--muted); }
+
+    /* ═══════════════════════════════════════════════════════
+       AI RECOMMENDATION CARD
+    ═══════════════════════════════════════════════════════ */
+    #aiSection {
+      display: none; margin-bottom: 24px;
+    }
+    .ai-card {
+      background: linear-gradient(135deg, rgba(108,99,255,.08) 0%, rgba(79,195,247,.05) 100%);
+      border: 1px solid rgba(108,99,255,.3); border-radius: var(--r);
+      padding: 24px 28px; position: relative; overflow: hidden;
+    }
+    .ai-card::before {
+      content: '';
+      position: absolute; top: -40px; right: -40px;
+      width: 140px; height: 140px;
+      background: radial-gradient(circle, rgba(108,99,255,.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .ai-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .ai-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .ai-title { font-size: 14px; font-weight: 700; color: var(--text); }
+    .ai-subtitle { font-size: 11px; color: var(--muted); }
+    .ai-verdict {
+      background: rgba(108,99,255,.12); border: 1px solid rgba(108,99,255,.2);
+      border-radius: var(--r-sm); padding: 10px 16px; margin-bottom: 14px;
+      font-size: 14px; font-weight: 600; color: var(--accent3); line-height: 1.5;
+    }
+    .ai-body { font-size: 13px; color: var(--text); line-height: 1.7; margin-bottom: 16px; }
+    .ai-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ai-col-title { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+    .ai-col-title.pros { color: var(--green); }
+    .ai-col-title.cons { color: var(--red); }
+    .ai-list { display: flex; flex-direction: column; gap: 5px; }
+    .ai-list-item { font-size: 12px; color: var(--muted); display: flex; gap: 7px; line-height: 1.5; }
+    .ai-list-item::before { flex-shrink: 0; margin-top: 2px; }
+    .ai-list-item.pro::before { content: '✓'; color: var(--green); }
+    .ai-list-item.con::before { content: '✗'; color: var(--red); }
+
+    /* ═══════════════════════════════════════════════════════
+       PRODUCT CARDS
+    ═══════════════════════════════════════════════════════ */
+    #resultsSection { display: none; margin-bottom: 24px; }
+    #results { display: flex; flex-direction: column; gap: 12px; }
+
+    .product-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); display: grid;
+      grid-template-columns: 52px 1fr auto;
+      gap: 16px; align-items: start; padding: 18px 20px;
+      transition: border-color .2s, transform .15s, box-shadow .2s;
+      position: relative;
+    }
+    .product-card:hover {
+      border-color: var(--border2); transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.3);
+    }
+    .product-card.rank-1 { border-left: 3px solid var(--gold); }
+    .product-card.rank-2 { border-left: 3px solid var(--silver); }
+    .product-card.rank-3 { border-left: 3px solid var(--bronze); }
+
+    /* Rank badge */
+    .rank-badge {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .rank-badge.r1 { background: rgba(255,215,0,.12); }
+    .rank-badge.r2 { background: rgba(176,184,200,.1); }
+    .rank-badge.r3 { background: rgba(205,127,50,.12); }
+    .rank-badge.rn { background: var(--surface2); font-size: 13px; color: var(--muted); font-weight: 600; }
+
+    /* Product info column */
+    .product-info { min-width: 0; }
+    .product-platform {
+      font-size: 10px; font-weight: 700; letter-spacing: .8px;
+      text-transform: uppercase; margin-bottom: 5px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .plat-amazon { color: var(--amazon); }
+    .plat-walmart { color: var(--walmart); }
+    .product-title {
+      font-size: 14px; font-weight: 600; color: var(--text); line-height: 1.45; margin-bottom: 10px;
+    }
+    .product-title a { color: inherit; text-decoration: none; }
+    .product-title a:hover { color: var(--accent2); }
+    .product-meta { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .price-main { font-size: 18px; font-weight: 800; color: var(--green); }
+    .price-original { text-decoration: line-through; color: var(--muted); font-size: 12px; }
+    .discount-tag {
+      background: rgba(248,113,113,.13); color: var(--red);
+      border-radius: 4px; padding: 2px 7px; font-size: 10px; font-weight: 700;
+    }
+    .meta-pill {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; font-size: 11px; padding: 3px 9px; color: var(--muted);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .meta-pill.stock-in  { border-color: rgba(52,211,153,.3); color: var(--green); }
+    .meta-pill.stock-out { border-color: rgba(248,113,113,.3); color: var(--red); }
+    .meta-pill.prime     { border-color: rgba(79,195,247,.3);  color: var(--accent2); }
+    .star-val { color: var(--gold); font-weight: 600; }
+    .rev-cnt  { color: var(--muted); }
+
+    .features-row { display: flex; flex-direction: column; gap: 3px; margin-bottom: 12px; }
+    .feat-item {
+      font-size: 11px; color: var(--muted); display: flex; gap: 6px; line-height: 1.5;
+    }
+    .feat-item::before { content: '›'; color: var(--accent); flex-shrink: 0; }
+
+    /* Action button */
+    .action-btn-wrap { margin-top: 2px; }
+    .action-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: linear-gradient(135deg, var(--accent) 0%, #5a55e8 100%);
+      border: none; border-radius: var(--r-sm); color: #fff;
+      font-size: 12px; font-weight: 600; font-family: inherit;
+      padding: 9px 16px; cursor: pointer; text-decoration: none;
+      transition: opacity .2s, transform .1s;
+      box-shadow: 0 3px 10px rgba(108,99,255,.3);
+    }
+    .action-btn:hover { opacity: .88; }
+    .action-btn:active { transform: scale(.97); }
+    .action-btn.walmart-btn {
+      background: linear-gradient(135deg, #0071ce 0%, #005fa3 100%);
+      box-shadow: 0 3px 10px rgba(0,113,206,.3);
+    }
+    .action-btn.loading { opacity: .6; cursor: not-allowed; }
+
+    /* Score panel */
+    .score-panel {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+      min-width: 100px;
+    }
+    .score-ring {
+      width: 58px; height: 58px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .score-ring svg { position: absolute; top: 0; left: 0; transform: rotate(-90deg); }
+    .score-ring circle { fill: none; stroke-width: 4; stroke-linecap: round; }
+    .score-ring .track { stroke: var(--surface3); }
+    .score-ring .fill  { transition: stroke-dashoffset .6s ease; }
+    .score-number { font-size: 15px; font-weight: 800; z-index: 1; }
+    .score-label-sm { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; }
+
+    /* All 5 dimension bars */
+    .score-bars { width: 100%; display: flex; flex-direction: column; gap: 4px; }
+    .bar-row { display: flex; align-items: center; gap: 5px; }
+    .bar-lbl { font-size: 9px; color: var(--muted); width: 46px; text-align: right; flex-shrink: 0; }
+    .bar-track {
+      flex: 1; height: 4px; background: var(--surface3); border-radius: 2px; overflow: hidden;
+    }
+    .bar-fill { height: 100%; border-radius: 2px; transition: width .5s ease; }
+    .bar-pts { font-size: 9px; color: var(--muted2); width: 20px; text-align: right; flex-shrink: 0; }
+
+    /* ═══════════════════════════════════════════════════════
+       WEB CONTEXT — "What the web says"
+    ═══════════════════════════════════════════════════════ */
+    #webSection { display: none; margin-bottom: 24px; }
+    .web-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+    .web-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 14px 16px;
+      transition: border-color .2s;
+    }
+    .web-card:hover { border-color: var(--border2); }
+    .web-card-title {
+      font-size: 12px; font-weight: 600; color: var(--text);
+      margin-bottom: 6px; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .web-card-snippet {
+      font-size: 11px; color: var(--muted); line-height: 1.55;
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .web-card-link {
+      font-size: 10px; color: var(--accent2); text-decoration: none;
+      display: flex; align-items: center; gap: 4px;
+    }
+    .web-card-link:hover { text-decoration: underline; }
+
+    /* ═══════════════════════════════════════════════════════
+       ACTION MODAL — browser task result
+    ═══════════════════════════════════════════════════════ */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,.7); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 28px 32px; max-width: 520px; width: 90%;
+      box-shadow: 0 24px 60px rgba(0,0,0,.5);
+    }
+    .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+    .modal-log { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; min-height: 60px; }
+    .modal-result {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 14px 16px; font-size: 12px; color: var(--muted);
+      white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
+    }
+    .modal-close {
+      width: 100%; margin-top: 16px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text); font-size: 13px;
+      font-family: inherit; padding: 10px; cursor: pointer;
+      transition: background .2s;
+    }
+    .modal-close:hover { background: var(--surface3); }
+
+    /* ── Empty state ── */
+    .empty-state {
+      text-align: center; padding: 64px 20px; color: var(--muted);
+    }
+    .empty-icon { font-size: 52px; margin-bottom: 16px; opacity: .6; }
+    .empty-state h2 { color: var(--text); font-size: 18px; margin-bottom: 8px; }
+    .empty-state p  { font-size: 13px; max-width: 420px; margin: 0 auto; line-height: 1.7; }
+
+    /* ── Footer ── */
+    footer {
+      position: relative; z-index: 1;
+      text-align: center; padding: 36px 20px 48px;
+      color: var(--muted); font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .footer-tools { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .tool-badge {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 20px; padding: 4px 10px; font-size: 10px; color: var(--muted2);
+    }
+
+    @media (max-width: 680px) {
+      header { padding: 14px 16px; }
+      main { padding: 0 14px; margin: 20px auto; }
+      .search-row { flex-direction: column; }
+      .product-card { grid-template-columns: 44px 1fr; }
+      .score-panel { display: none; }
+      .header-right { display: none; }
+      .pipeline { display: none; }
+      .ai-cols { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo-wrap">🛍️</div>
+  <div class="header-text">
+    <h1>SmartShop AI Agent</h1>
+    <p>Searches Amazon &amp; Walmart live · Reasons through results · Takes action</p>
+  </div>
+  <div class="header-right">
+    <div class="pipeline-badge">6-step autonomous pipeline</div>
+    <div class="badge">Powered by <strong>Anakin MCP</strong></div>
+  </div>
+</header>
+
+<main>
+
+  <!-- ── Pipeline visualiser ── -->
+  <div class="pipeline" id="pipelineViz">
+    <div class="pipe-step"><div class="pipe-node" id="pn1">🔍 Parse Intent</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node" id="pn2">🛒 Live Search</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node" id="pn3">📊 Normalise</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node" id="pn4">🔬 Enrich</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node" id="pn5">🧠 Score &amp; Rank</div></div>
+    <div class="pipe-arrow">→</div>
+    <div class="pipe-step"><div class="pipe-node" id="pn6">🤖 AI Summary</div></div>
+  </div>
+
+  <!-- ── Search ── -->
+  <section class="search-section">
+    <div class="search-label">
+      What are you shopping for?
+      <small>— add a budget for smarter results</small>
+    </div>
+    <div class="search-row">
+      <input id="queryInput" type="text" autocomplete="off" spellcheck="false"
+        placeholder='e.g. "best laptop under $800 for coding"' />
+      <button id="searchBtn">🔍&nbsp; Search</button>
+    </div>
+    <div class="examples">
+      <span class="chip" data-q="best laptop under $800 for coding">💻 Laptop under $800</span>
+      <span class="chip" data-q="wireless headphones between $50 and $150">🎧 Headphones $50–$150</span>
+      <span class="chip" data-q="4K TV under $500">📺 4K TV under $500</span>
+      <span class="chip" data-q="standing desk under $400">🖥️ Standing desk under $400</span>
+      <span class="chip" data-q="robot vacuum under $300">🤖 Robot vacuum under $300</span>
+      <span class="chip" data-q="gaming chair under $250">🎮 Gaming chair under $250</span>
+    </div>
+  </section>
+
+  <!-- ── Progress ── -->
+  <section id="progressSection">
+    <div class="progress-header">⚙️ Agent Pipeline — Live Progress</div>
+    <div id="progressLog"></div>
+  </section>
+
+  <!-- ── Intent card ── -->
+  <div id="intentCard">
+    <div class="intent-grid" id="intentGrid"></div>
+  </div>
+
+  <!-- ── AI Recommendation ── -->
+  <section id="aiSection">
+    <div class="section-head">
+      <div class="section-title">🤖 AI Recommendation</div>
+      <div class="section-meta" id="aiMeta"></div>
+    </div>
+    <div class="ai-card">
+      <div class="ai-header">
+        <div class="ai-icon">✨</div>
+        <div>
+          <div class="ai-title">Deep Research Analysis</div>
+          <div class="ai-subtitle">Generated by Anakin AI deep_research — based on live product data + web sources</div>
+        </div>
+      </div>
+      <div class="ai-verdict" id="aiVerdict"></div>
+      <div class="ai-body"  id="aiBody"></div>
+      <div class="ai-cols">
+        <div>
+          <div class="ai-col-title pros">Pros</div>
+          <div class="ai-list" id="aiPros"></div>
+        </div>
+        <div>
+          <div class="ai-col-title cons">Cons &amp; Caveats</div>
+          <div class="ai-list" id="aiCons"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Products ── -->
+  <section id="resultsSection">
+    <div class="section-head">
+      <div class="section-title" id="resultsTitle"></div>
+      <div class="section-meta" id="resultsMeta"></div>
+    </div>
+    <div id="results">
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h2>Ready to shop smarter</h2>
+        <p>Enter a product query above — the agent will search Amazon &amp; Walmart live, analyse prices, ratings and reviews, then rank the best options and generate an AI recommendation for you.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Web context ── -->
+  <section id="webSection">
+    <div class="section-head">
+      <div class="section-title">🌐 What the Web Says</div>
+      <div class="section-meta" id="webMeta">Live web sources scraped by Anakin</div>
+    </div>
+    <div class="web-grid" id="webGrid"></div>
+  </section>
+
+</main>
+
+<!-- ── Browser Action Modal ── -->
+<div class="modal-overlay" id="actionModal">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">🤖 Agent Taking Action…</div>
+    <div class="modal-log" id="modalLog"></div>
+    <div class="modal-result" id="modalResult" style="display:none"></div>
+    <button class="modal-close" id="modalClose">Close</button>
+  </div>
+</div>
+
+<footer>
+  Built for <strong><a href="https://anakin.io/hackathon/anakin-forge" target="_blank">Anakin Forge Hackathon</a></strong> · Sept 7–14, 2026
+  <div class="footer-tools">
+    <span class="tool-badge">wire_read_action → am_search_products</span>
+    <span class="tool-badge">wire_read_action → walmart_search</span>
+    <span class="tool-badge">wire_read_action → am_product_details</span>
+    <span class="tool-badge">wire_read_action → walmart_reviews</span>
+    <span class="tool-badge">search (web)</span>
+    <span class="tool-badge">deep_research (AI)</span>
+    <span class="tool-badge">browser_task (action)</span>
+  </div>
+</footer>
+
+<script>
+'use strict';
+
+// ── State ──────────────────────────────────────────────────────────────────
+let activeES = null;
+
+// ── DOM ────────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const queryInput      = $('queryInput');
+const searchBtn       = $('searchBtn');
+const progressSection = $('progressSection');
+const progressLog     = $('progressLog');
+const intentCard      = $('intentCard');
+const intentGrid      = $('intentGrid');
+const aiSection       = $('aiSection');
+const aiVerdict       = $('aiVerdict');
+const aiBody          = $('aiBody');
+const aiPros          = $('aiPros');
+const aiCons          = $('aiCons');
+const aiMeta          = $('aiMeta');
+const resultsSection  = $('resultsSection');
+const resultsTitle    = $('resultsTitle');
+const resultsMeta     = $('resultsMeta');
+const resultsDiv      = $('results');
+const webSection      = $('webSection');
+const webGrid         = $('webGrid');
+const webMeta         = $('webMeta');
+const actionModal     = $('actionModal');
+const modalTitle      = $('modalTitle');
+const modalLog        = $('modalLog');
+const modalResult     = $('modalResult');
+const modalClose      = $('modalClose');
+
+// Pipeline node ids
+const pipeNodes = [null,'pn1','pn2','pn3','pn4','pn5','pn6'];
+
+// ── Chips ──────────────────────────────────────────────────────────────────
+document.querySelectorAll('.chip').forEach(c =>
+  c.addEventListener('click', () => { queryInput.value = c.dataset.q; startSearch(); })
+);
+
+// ── Triggers ──────────────────────────────────────────────────────────────
+searchBtn.addEventListener('click', startSearch);
+queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') startSearch(); });
+modalClose.addEventListener('click', () => actionModal.classList.remove('open'));
+actionModal.addEventListener('click', e => { if (e.target === actionModal) actionModal.classList.remove('open'); });
+
+// ── Start search ──────────────────────────────────────────────────────────
+function startSearch() {
+  const q = queryInput.value.trim();
+  if (!q) { queryInput.focus(); return; }
+  runSearch(q);
+}
+
+// ── Main search ───────────────────────────────────────────────────────────
+function runSearch(query) {
+  if (activeES) { activeES.close(); activeES = null; }
+
+  // Reset
+  searchBtn.disabled = true;
+  searchBtn.textContent = '⏳  Searching…';
+  progressSection.style.display = 'block';
+  intentCard.style.display      = 'none';
+  aiSection.style.display       = 'none';
+  resultsSection.style.display  = 'none';
+  webSection.style.display      = 'none';
+  progressLog.innerHTML         = '';
+  resultsDiv.innerHTML          = '';
+  webGrid.innerHTML             = '';
+  pipeNodes.forEach(id => id && setNode(id, ''));
+
+  addLog('🚀 Launching SmartShop agent…', 'active');
+
+  const es = new EventSource(`/api/search/stream?q=${encodeURIComponent(query)}`);
+  activeES = es;
+
+  es.addEventListener('step', e => {
+    const d = JSON.parse(e.data);
+    updateLastLog(d.label);
+    // Light up corresponding pipeline node
+    if (d.step && pipeNodes[d.step]) activateNode(pipeNodes[d.step], d.step);
+  });
+
+  es.addEventListener('intent', e => {
+    renderIntent(JSON.parse(e.data));
+    finishLog('✅ Query parsed');
+    addLog('⏳ Fetching live data from Amazon & Walmart…', 'active');
+  });
+
+  es.addEventListener('raw_counts', e => {
+    const d = JSON.parse(e.data);
+    updateLastLog(`📦 ${d.amazon} Amazon + ${d.walmart} Walmart products — analysing…`);
+  });
+
+  es.addEventListener('warning', e => {
+    const d = JSON.parse(e.data);
+    addLog(`⚠️ ${d.message}`, 'warn');
+  });
+
+  es.addEventListener('web_context', e => {
+    const d = JSON.parse(e.data);
+    renderWebContext(d);
+  });
+
+  es.addEventListener('ai_summary', e => {
+    const d = JSON.parse(e.data);
+    renderAISummary(d);
+  });
+
+  es.addEventListener('done', e => {
+    const result = JSON.parse(e.data);
+    finishLog('✅ Complete!');
+    markAllNodesDone();
+
+    // If AI summary came in the done payload (not via ai_summary event)
+    if (result.topSummary && typeof result.topSummary === 'object') {
+      renderAISummary(result.topSummary);
+    }
+    // Web context from done payload
+    if (result.webSnippets && result.webSnippets.length > 0 && webGrid.childElementCount === 0) {
+      renderWebContext({ snippets: result.webSnippets });
+    }
+
+    setTimeout(() => {
+      progressSection.style.display = 'none';
+      renderResults(result);
+      searchBtn.disabled = false;
+      searchBtn.textContent = '🔍  Search';
+    }, 300);
+
+    es.close(); activeES = null;
+  });
+
+  es.addEventListener('error', e => {
+    let msg = 'Search failed. Please try again.';
+    try { msg = JSON.parse(e.data).message; } catch {}
+    finishLog(`❌ ${msg}`, 'warn');
+    searchBtn.disabled = false;
+    searchBtn.textContent = '🔍  Search';
+    es.close(); activeES = null;
+  });
+
+  es.onerror = () => {
+    if (es.readyState === EventSource.CLOSED) return;
+    finishLog('❌ Connection lost.', 'warn');
+    searchBtn.disabled = false;
+    searchBtn.textContent = '🔍  Search';
+    es.close();
+  };
+}
+
+// ── Pipeline nodes ────────────────────────────────────────────────────────
+function setNode(id, cls)      { const n = $(id); if (n) n.className = `pipe-node ${cls}`; }
+function activateNode(id, step) {
+  // mark previous nodes done
+  for (let i = 1; i < step; i++) {
+    if (pipeNodes[i]) setNode(pipeNodes[i], 'done');
+  }
+  setNode(id, 'active');
+}
+function markAllNodesDone() {
+  pipeNodes.forEach(id => id && setNode(id, 'done'));
+}
+
+// ── Progress log ──────────────────────────────────────────────────────────
+function addLog(text, type = '') {
+  const div = document.createElement('div');
+  div.className = `log-line ${type}`;
+  div.dataset.type = type;
+  div.innerHTML = type === 'active'
+    ? `<div class="spin"></div><span>${text}</span>`
+    : `<span>${text}</span>`;
+  progressLog.appendChild(div);
+  progressLog.scrollTop = progressLog.scrollHeight;
+  return div;
+}
+function updateLastLog(text) {
+  const lines = progressLog.querySelectorAll('.log-line');
+  const last  = lines[lines.length - 1];
+  if (last && last.dataset.type === 'active') {
+    last.querySelector('span').textContent = text;
+  } else {
+    addLog(text, 'active');
+  }
+}
+function finishLog(text, type = 'done') {
+  const lines = progressLog.querySelectorAll('.log-line');
+  const last  = lines[lines.length - 1];
+  if (last && last.dataset.type === 'active') {
+    last.className = `log-line ${type}`;
+    last.dataset.type = type;
+    last.innerHTML = `<span>${text}</span>`;
+  } else {
+    addLog(text, type);
+  }
+}
+
+// ── Intent card ───────────────────────────────────────────────────────────
+function renderIntent(intent) {
+  intentCard.style.display = 'block';
+  const items = [
+    { label: 'Keywords',   val: intent.keywords },
+    intent.maxPrice ? { label: 'Max Price',  val: `$${intent.maxPrice}` }  : null,
+    intent.minPrice ? { label: 'Min Price',  val: `$${intent.minPrice}` }  : null,
+    { label: 'Category',   val: intent.category },
+    { label: 'Sort',       val: intent.sortPreference },
+  ].filter(Boolean);
+  intentGrid.innerHTML = items.map(it =>
+    `<div class="intent-item"><strong>${it.label}</strong><span>${escHtml(String(it.val))}</span></div>`
+  ).join('');
+}
+
+// ── AI Summary ────────────────────────────────────────────────────────────
+function renderAISummary(data) {
+  if (!data) return;
+
+  // Handle both structured object and plain string
+  let verdict = '', body = '', pros = [], cons = [];
+
+  if (typeof data === 'string') {
+    body = data;
+    verdict = 'AI Analysis';
+  } else {
+    verdict = data.verdict || '';
+    body    = data.recommendation || data.summary || data.text || '';
+    pros    = Array.isArray(data.pros) ? data.pros : [];
+    cons    = Array.isArray(data.cons) ? data.cons : [];
+  }
+
+  if (!body && !verdict) return;
+
+  aiSection.style.display = 'block';
+  aiVerdict.textContent   = verdict || '✨ AI-powered recommendation';
+  aiBody.textContent      = body;
+  aiMeta.textContent      = 'Powered by Anakin deep_research';
+
+  aiPros.innerHTML = pros.length
+    ? pros.map(p => `<div class="ai-list-item pro">${escHtml(p)}</div>`).join('')
+    : '<div class="ai-list-item" style="color:var(--muted2)">—</div>';
+
+  aiCons.innerHTML = cons.length
+    ? cons.map(c => `<div class="ai-list-item con">${escHtml(c)}</div>`).join('')
+    : '<div class="ai-list-item" style="color:var(--muted2)">—</div>';
+}
+
+// ── Web context ───────────────────────────────────────────────────────────
+function renderWebContext(data) {
+  const snippets = data?.snippets || (Array.isArray(data) ? data : []);
+  if (!snippets.length) return;
+
+  webSection.style.display = 'block';
+  webMeta.textContent = `${snippets.length} live sources · scraped by Anakin search`;
+
+  snippets.forEach(s => {
+    if (!s.snippet && !s.title) return;
+    const card = document.createElement('div');
+    card.className = 'web-card';
+    card.innerHTML = `
+      <div class="web-card-title">${escHtml(s.title || 'Source')}</div>
+      <div class="web-card-snippet">${escHtml(s.snippet || '')}</div>
+      ${s.url ? `<a class="web-card-link" href="${escHtml(s.url)}" target="_blank" rel="noopener">↗ Read more</a>` : ''}
+    `;
+    webGrid.appendChild(card);
+  });
+}
+
+// ── Results ───────────────────────────────────────────────────────────────
+function renderResults(result) {
+  const { intent, table, sources, durationMs } = result;
+
+  resultsSection.style.display = 'block';
+  resultsTitle.innerHTML =
+    `Results for <span style="color:var(--accent2)">"${escHtml(intent.original)}"</span>`;
+  resultsMeta.textContent =
+    `${sources.amazon} Amazon · ${sources.walmart} Walmart → ${table.length} ranked · ${(durationMs/1000).toFixed(1)}s`;
+
+  resultsDiv.innerHTML = '';
+  if (!table || !table.length) {
+    resultsDiv.innerHTML = `<div class="empty-state">
+      <div class="empty-icon">😕</div>
+      <h2>No results found</h2>
+      <p>Try adjusting your query or relaxing the budget constraint.</p>
+    </div>`;
+    return;
+  }
+
+  table.forEach((p, i) => resultsDiv.appendChild(buildCard(p, i)));
+}
+
+function buildCard(p, i) {
+  const card = document.createElement('div');
+  card.className = `product-card rank-${i + 1}`;
+
+  // Rank badge
+  const emojis = ['🥇','🥈','🥉'];
+  const badgeCls  = i < 3 ? `r${i+1}` : 'rn';
+  const badgeInner = i < 3 ? emojis[i] : `#${i+1}`;
+
+  // Platform
+  const isPlatAmazon = p.platform.includes('Amazon');
+  const platCls  = isPlatAmazon ? 'plat-amazon' : 'plat-walmart';
+  const platIcon = isPlatAmazon ? '🛒' : '🏪';
+
+  // Price
+  let priceHtml = '<span style="color:var(--muted)">Price unavailable</span>';
+  if (p.price !== 'N/A') {
+    priceHtml = `<span class="price-main">${escHtml(p.price)}</span>`;
+    if (p.originalPrice) priceHtml += ` <span class="price-original">${escHtml(p.originalPrice)}</span>`;
+    if (p.discount && p.discount !== '—') priceHtml += ` <span class="discount-tag">${escHtml(p.discount)}</span>`;
+  }
+
+  // Rating
+  let ratingHtml = '';
+  if (p.rating && p.rating !== '—') {
+    ratingHtml = `<span class="meta-pill"><span class="star-val">★ ${escHtml(p.rating)}</span>&nbsp;<span class="rev-cnt">(${escHtml(p.reviews)})</span></span>`;
+  }
+
+  // Stock + Prime
+  const stockHtml = p.inStock === '✓'
+    ? `<span class="meta-pill stock-in">✓ In Stock</span>`
+    : `<span class="meta-pill stock-out">✗ Out of Stock</span>`;
+
+  const primeHtml = p.prime === '✓'
+    ? `<span class="meta-pill prime">⚡ ${isPlatAmazon ? 'Prime' : 'Walmart+'}</span>`
+    : '';
+
+  // Features
+  const featHtml = (p.features || []).slice(0, 3).map(f =>
+    `<div class="feat-item">${escHtml(String(f).slice(0, 100))}</div>`
+  ).join('');
+
+  // Action button
+  const isAmazon = isPlatAmazon;
+  const btnCls  = isAmazon ? '' : 'walmart-btn';
+  const btnIcon = p.actionType === 'add_to_cart' ? '🛒' : '🔗';
+  const btnLabel = escHtml(p.actionLabel || 'View Product');
+  const actionBtnHtml = p.actionUrl
+    ? `<div class="action-btn-wrap">
+        <button class="action-btn ${btnCls}"
+          data-url="${escHtml(p.actionUrl)}"
+          data-product-url="${escHtml(p.url)}"
+          data-platform="${escHtml(isPlatAmazon ? 'amazon' : 'walmart')}"
+          data-id="${escHtml(p.id || '')}"
+          data-title="${escHtml(p.title || '')}"
+          data-type="${escHtml(p.actionType || 'view_product')}"
+          onclick="handleAction(this)">
+          ${btnIcon} ${btnLabel}
+        </button>
+       </div>`
+    : '';
+
+  // Score ring — colour based on score
+  const score    = p.score || 0;
+  const scoreCol = score >= 70 ? '#34d399' : score >= 50 ? '#fbbf24' : '#f87171';
+  const circ     = 2 * Math.PI * 22;   // r=22
+  const dash     = circ - (score / 100) * circ;
+
+  // All 5 score bars
+  const bd = p.breakdown || {};
+  const barDefs = [
+    { label: 'Value',    pts: bd.value    || 0, max: 30, col: '#6c63ff' },
+    { label: 'Rating',   pts: bd.rating   || 0, max: 25, col: '#4fc3f7' },
+    { label: 'Reviews',  pts: bd.reviews  || 0, max: 20, col: '#a78bfa' },
+    { label: 'Features', pts: bd.features || 0, max: 15, col: '#34d399' },
+    { label: 'Stock',    pts: bd.stock    || 0, max: 10, col: '#fbbf24' },
+  ];
+  const barsHtml = barDefs.map(b => {
+    const pct = Math.round((b.pts / b.max) * 100);
+    return `<div class="bar-row">
+      <span class="bar-lbl">${b.label}</span>
+      <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${b.col}"></div></div>
+      <span class="bar-pts">${b.pts}</span>
+    </div>`;
+  }).join('');
+
+  card.innerHTML = `
+    <div class="rank-badge ${badgeCls}">${badgeInner}</div>
+
+    <div class="product-info">
+      <div class="product-platform ${platCls}">${platIcon} ${escHtml(p.platform)}</div>
+      <div class="product-title">
+        ${p.url
+          ? `<a href="${escHtml(p.url)}" target="_blank" rel="noopener">${escHtml(p.title)}</a>`
+          : escHtml(p.title)}
+      </div>
+      <div class="product-meta">
+        ${priceHtml}
+        ${ratingHtml}
+        ${stockHtml}
+        ${primeHtml}
+      </div>
+      ${featHtml ? `<div class="features-row">${featHtml}</div>` : ''}
+      ${actionBtnHtml}
+    </div>
+
+    <div class="score-panel">
+      <div>
+        <div class="score-ring">
+          <svg width="58" height="58" viewBox="0 0 58 58">
+            <circle class="track" cx="29" cy="29" r="22" stroke-width="4"/>
+            <circle class="fill" cx="29" cy="29" r="22" stroke-width="4"
+              stroke="${scoreCol}"
+              stroke-dasharray="${circ.toFixed(2)}"
+              stroke-dashoffset="${dash.toFixed(2)}"/>
+          </svg>
+          <span class="score-number" style="color:${scoreCol}">${score}</span>
+        </div>
+        <div class="score-label-sm" style="text-align:center;margin-top:2px">/ 100</div>
+      </div>
+      <div class="score-bars">${barsHtml}</div>
+    </div>
+  `;
+
+  return card;
+}
+
+// ── Handle action button ──────────────────────────────────────────────────
+function handleAction(btn) {
+  const actionType   = btn.dataset.type;
+  const actionUrl    = btn.dataset.url;
+  const productUrl   = btn.dataset.productUrl;
+  const platform     = btn.dataset.platform;
+  const productId    = btn.dataset.id;
+  const productTitle = btn.dataset.title;
+
+  // For view_product just open the link
+  if (actionType === 'view_product' || !actionUrl) {
+    window.open(productUrl || actionUrl, '_blank');
+    return;
+  }
+
+  // For add_to_cart: open Amazon cart URL directly (instant), then ALSO
+  // launch the browser_task to demonstrate the autonomous agent action
+  if (platform === 'amazon') {
+    window.open(actionUrl, '_blank'); // open cart URL in new tab immediately
+  }
+
+  // Show the modal and launch the Anakin browser_task
+  openActionModal(productTitle, productUrl, platform, productId);
+}
+
+function openActionModal(title, url, platform, id) {
+  modalTitle.textContent  = `🤖 Agent Action — "${title?.slice(0, 45)}…"`;
+  modalLog.innerHTML      = '';
+  modalResult.style.display = 'none';
+  modalResult.textContent   = '';
+  actionModal.classList.add('open');
+
+  addModalLog('🤖 Launching Anakin cloud browser agent…', 'active');
+  addModalLog(`🌐 Navigating to ${platform === 'amazon' ? 'Amazon' : 'Walmart'} product page…`);
+
+  const params = new URLSearchParams({ url, platform, id: id || '', title: title || '' });
+  const es = new EventSource(`/api/action/stream?${params}`);
+
+  es.addEventListener('step', e => {
+    const d = JSON.parse(e.data);
+    updateModalLog(d.label);
+  });
+
+  es.addEventListener('done', e => {
+    const result = JSON.parse(e.data);
+    updateModalLog('✅ Browser task complete!');
+
+    const br = result.browserResult;
+    let summary = '';
+    if (br) {
+      if (typeof br === 'string') {
+        summary = br;
+      } else {
+        summary = JSON.stringify(br, null, 2);
+      }
+    } else {
+      summary = JSON.stringify(result, null, 2);
+    }
+
+    modalResult.style.display = 'block';
+    modalResult.textContent   = summary;
+    es.close();
+  });
+
+  es.addEventListener('error', e => {
+    let msg = 'Action failed.';
+    try { msg = JSON.parse(e.data).message; } catch {}
+    updateModalLog(`❌ ${msg}`, 'warn');
+    es.close();
+  });
+
+  es.onerror = () => { if (es.readyState !== EventSource.CLOSED) updateModalLog('❌ Connection lost.', 'warn'); };
+}
+
+function addModalLog(text, type = 'done') {
+  const d = document.createElement('div');
+  d.className   = `log-line ${type}`;
+  d.dataset.type = type;
+  d.innerHTML    = type === 'active'
+    ? `<div class="spin"></div><span>${text}</span>`
+    : `<span>${text}</span>`;
+  modalLog.appendChild(d);
+}
+function updateModalLog(text, type = 'active') {
+  const lines = modalLog.querySelectorAll('.log-line');
+  const last  = lines[lines.length - 1];
+  if (last && last.dataset.type === 'active') {
+    last.querySelector('span').textContent = text;
+    if (type !== 'active') {
+      last.className    = `log-line ${type}`;
+      last.dataset.type  = type;
+      last.innerHTML     = `<span>${text}</span>`;
+    }
+  } else {
+    addModalLog(text, type);
+  }
+}
+
+// ── Utility ───────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>

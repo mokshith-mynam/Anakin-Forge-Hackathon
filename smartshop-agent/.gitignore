@@ -1,0 +1,19 @@
+# Environment — never commit API keys
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build / temp
+dist/
+.cache/
