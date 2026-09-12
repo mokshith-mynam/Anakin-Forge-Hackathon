@@ -19,7 +19,7 @@
 
 require('dotenv').config();
 
-const COOLDOWN_MS = 60_000; // 60 seconds before a rate-limited key retries
+const COOLDOWN_MS = 90_000; // 90 seconds before a rate-limited key retries (burst limit window)
 
 class KeyPool {
   constructor() {

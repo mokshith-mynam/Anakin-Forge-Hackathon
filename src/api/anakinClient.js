@@ -150,11 +150,11 @@ function parseToolResult(result) {
 
 /**
  * Wraps a tool call with automatic key rotation on rate-limit errors.
- * On each rate-limit hit it marks the current key exhausted and retries
- * immediately with the next key in the pool.
+ * Waits 2 seconds between rotation attempts to avoid burst-limiting
+ * all keys simultaneously.
  */
 async function withRotation(fn) {
-  const maxTries = keyPool.size * 2 + 1;
+  const maxTries = keyPool.size + 1; // try each key once, plus one retry on first key
   let lastError;
 
   for (let i = 0; i < maxTries; i++) {
@@ -166,11 +166,11 @@ async function withRotation(fn) {
         /rate.?limit|burst.?limit|slow.?down|too.?many|credit/i.test(err.message);
 
       if (isLimit) {
-        // Mark the key that just failed (mcpRequest already called getKey, so
-        // currentIndex is still pointing at it)
         const currentKey = await keyPool.getKey();
         keyPool.markExhausted(currentKey);
-        // No sleep — getKey() will wait if all keys are cooling
+        // Wait 2 seconds before trying the next key — prevents burst-limiting
+        // all keys in the same second
+        await sleep(2000);
         continue;
       }
       throw err; // non-rate-limit error — propagate immediately
