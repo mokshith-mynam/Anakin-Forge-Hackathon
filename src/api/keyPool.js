@@ -1,10 +1,10 @@
 /**
  * API Key Pool
- * Manages a pool of Anakin API keys and rotates automatically when one is
- * exhausted (rate-limited or out of credits).
+ * Manages a pool of up to 10 Anakin API keys and rotates automatically when
+ * one is exhausted (rate-limited or out of credits).
  *
  * Keys are read from environment variables:
- *   ANAKIN_API_KEY_1, ANAKIN_API_KEY_2, ANAKIN_API_KEY_3, ANAKIN_API_KEY_4
+ *   ANAKIN_API_KEY_1 through ANAKIN_API_KEY_10
  *
  * Rotation logic:
  *   - On a rate-limit or credit-exhausted error, the current key is marked
@@ -23,12 +23,18 @@ const COOLDOWN_MS = 60_000; // 60 seconds before a rate-limited key retries
 
 class KeyPool {
   constructor() {
-    // Collect all non-empty keys from env
+    // Collect all non-empty keys from env — supports up to 10 keys
     this.keys = [
       process.env.ANAKIN_API_KEY_1,
       process.env.ANAKIN_API_KEY_2,
       process.env.ANAKIN_API_KEY_3,
       process.env.ANAKIN_API_KEY_4,
+      process.env.ANAKIN_API_KEY_5,
+      process.env.ANAKIN_API_KEY_6,
+      process.env.ANAKIN_API_KEY_7,
+      process.env.ANAKIN_API_KEY_8,
+      process.env.ANAKIN_API_KEY_9,
+      process.env.ANAKIN_API_KEY_10,
       // Legacy single-key support
       process.env.ANAKIN_API_KEY,
     ]
@@ -39,7 +45,7 @@ class KeyPool {
 
     if (this.keys.length === 0) {
       throw new Error(
-        'No Anakin API keys found. Set ANAKIN_API_KEY_1 (and optionally _2, _3, _4) in your .env file.'
+        'No Anakin API keys found. Set ANAKIN_API_KEY_1 through ANAKIN_API_KEY_10 in your .env file.'
       );
     }
 
