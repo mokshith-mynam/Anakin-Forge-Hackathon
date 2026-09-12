@@ -193,10 +193,10 @@ app.get('/{*path}', (_req, res) => {
   res.sendFile(path.join(__dirname, 'ui/public/index.html'));
 });
 
-app.listen(PORT, () => {
+const httpServer = app.listen(PORT, () => {
   console.log(`\n🛍  SmartShop Agent running at http://localhost:${PORT}`);
   console.log(`   POST http://localhost:${PORT}/api/search`);
   console.log(`   GET  http://localhost:${PORT}/api/search/stream?q=<query>\n`);
 });
 
-module.exports = app;
+module.exports = httpServer;

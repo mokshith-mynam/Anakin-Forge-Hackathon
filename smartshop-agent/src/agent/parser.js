@@ -73,7 +73,7 @@ function parseQuery(query) {
     [/\b(laptop|notebook|macbook|chromebook|ultrabook)\b/i, 'electronics'],
     [/\b(phone|iphone|android|smartphone|mobile)\b/i, 'electronics'],
     [/\b(tablet|ipad)\b/i, 'electronics'],
-    [/\b(headphone|earbud|airpod|speaker|audio)\b/i, 'electronics'],
+    [/\b(headphone|headphones|earbud|earbuds|airpod|airpods|speaker|audio)\b/i, 'electronics'],
     [/\b(tv|television|monitor|display|screen)\b/i, 'electronics'],
     [/\b(camera|lens|dslr|mirrorless)\b/i, 'electronics'],
     [/\b(gaming|console|playstation|xbox|nintendo|gpu|graphics card)\b/i, 'electronics'],

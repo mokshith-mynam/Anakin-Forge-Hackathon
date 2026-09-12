@@ -11,7 +11,10 @@
     "dev":        "node src/server.js",
     "cli":        "node src/cli.js",
     "cli:fast":   "node src/cli.js --no-enrich --no-web",
-    "demo":       "node src/cli.js --no-enrich \"wireless headphones under $100\""
+    "demo":       "node src/cli.js --no-enrich \"wireless headphones under $100\"",
+    "test":       "node test.js",
+    "test:unit":  "node test.js --unit",
+    "test:live":  "node test.js --live"
   },
   "keywords": ["ai-agent", "shopping", "anakin", "mcp", "hackathon", "wire-api", "amazon", "walmart"],
   "author": "",
