@@ -92,9 +92,21 @@ async function _runPipeline(query, { enrichWalmart, includeWebContext, limit, em
     });
 
     const searchQuery = intent.keywords || query;
+
+    // Wrap each search with a per-platform timeout so one slow platform
+    // never blocks the other. Walmart is slower (~30s) so gets 45s.
+    function withTimeout(promise, ms, label) {
+      return Promise.race([
+        promise,
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error(`${label} timed out after ${ms/1000}s`)), ms)
+        ),
+      ]);
+    }
+
     const [amazonRaw, walmartRaw] = await Promise.allSettled([
-      client.amazonSearch(searchQuery, limit),
-      client.walmartSearch(searchQuery, limit),
+      withTimeout(client.amazonSearch(searchQuery, limit), 45000, 'Amazon'),
+      withTimeout(client.walmartSearch(searchQuery, limit), 45000, 'Walmart'),
     ]);
 
     const amazonData  = amazonRaw.status  === 'fulfilled' ? amazonRaw.value  : null;
