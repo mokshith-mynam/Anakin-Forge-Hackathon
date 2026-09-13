@@ -113,7 +113,7 @@ app.get('/api/search/stream', async (req, res) => {
     const emitter = await agent.run(query, {
       enrichWalmart:     req.query.enrich !== 'false',
       includeWebContext: req.query.web    !== 'false',  // DEFAULT ON — only off if ?web=false
-      limit:             parseInt(req.query.limit, 10) || 8,  // reduced from 12 to save credits
+      limit:             parseInt(req.query.limit, 10) || 12,
     });
 
     emitter.on('step',       d => sendEvent('step',       d));
