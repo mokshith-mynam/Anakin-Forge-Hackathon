@@ -34,13 +34,12 @@ const client = require('../api/anakinClient');
 function buildActionUrl(product) {
   if (product.platform === 'amazon' && product.id) {
     return {
-      actionUrl:   `https://www.amazon.com/gp/aws/cart/add.html?ASIN.1=${product.id}&Quantity.1=1`,
-      actionLabel: 'Add to Amazon Cart',
-      actionType:  'add_to_cart',
+      actionUrl:   product.url || `https://www.amazon.com/dp/${product.id}`,
+      actionLabel: 'View on Amazon',
+      actionType:  'view_product',
     };
   }
   if (product.platform === 'walmart' && product.id) {
-    // Walmart add-to-cart requires auth; send user to product page instead
     return {
       actionUrl:   product.url || `https://www.walmart.com/ip/${product.id}`,
       actionLabel: 'View on Walmart',

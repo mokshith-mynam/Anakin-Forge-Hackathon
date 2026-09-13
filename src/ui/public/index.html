@@ -584,7 +584,7 @@
     <span class="tool-badge">wire_read_action → walmart_reviews</span>
     <span class="tool-badge">search (web)</span>
     <span class="tool-badge">deep_research (AI)</span>
-    <span class="tool-badge">browser_task (action)</span>
+    <span class="tool-badge">scrape</span>
   </div>
 </footer>
 
@@ -922,7 +922,7 @@ function buildCard(p, i) {
   // Action button
   const isAmazon = isPlatAmazon;
   const btnCls  = isAmazon ? '' : 'walmart-btn';
-  const btnIcon = p.actionType === 'add_to_cart' ? '🛒' : '🔗';
+  const btnIcon = '🔗';
   const btnLabel = escHtml(p.actionLabel || 'View Product');
   const actionBtnHtml = p.actionUrl
     ? `<div class="action-btn-wrap">
