@@ -32,6 +32,46 @@ app.get('/api/keys/status', (_req, res) => {
   res.json({ keys: keyPool.status(), total: keyPool.size });
 });
 
+// ── Key diagnostic — tests first key with a live API call ─
+app.get('/api/keys/test', async (req, res) => {
+  try {
+    const fetch  = require('node-fetch');
+    const { keyPool } = require('./api/anakinClient');
+    const key = await keyPool.getKey();
+    const MCP_URL = process.env.ANAKIN_MCP_URL || 'https://mcp.anakin.io/mcp';
+
+    const response = await fetch(MCP_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept':       'application/json, text/event-stream',
+        'X-API-Key':    key,
+      },
+      body: JSON.stringify({
+        jsonrpc: '2.0', id: 1,
+        method:  'tools/call',
+        params: { name: 'wire_read_action', arguments: { action_id: 'am_search_products', params: { query: 'test', limit: 1 } } },
+      }),
+      signal: AbortSignal.timeout(60000),
+    });
+
+    const raw      = await response.text();
+    const dataLine = raw.split('\n').find(l => l.startsWith('data:'));
+    const payload  = dataLine ? JSON.parse(dataLine.slice(5)) : null;
+    const text     = payload?.result?.content?.[0]?.text || '';
+
+    res.json({
+      keySuffix:   key.slice(-8),
+      httpStatus:  response.status,
+      success:     text.toLowerCase().includes('product'),
+      responseText: text.slice(0, 300),
+      serverIP:    req.socket.localAddress,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── POST /api/search — blocking JSON response ─────────────
 app.post('/api/search', async (req, res) => {
   const { query, enrichWalmart = true, includeWebContext = false, limit = 12 } = req.body;
