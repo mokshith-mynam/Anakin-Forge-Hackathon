@@ -1009,24 +1009,9 @@ function handleAction(btn) {
   const actionType   = btn.dataset.type;
   const actionUrl    = btn.dataset.url;
   const productUrl   = btn.dataset.productUrl;
-  const platform     = btn.dataset.platform;
-  const productId    = btn.dataset.id;
-  const productTitle = btn.dataset.title;
 
-  // For view_product just open the link
-  if (actionType === 'view_product' || !actionUrl) {
-    window.open(productUrl || actionUrl, '_blank');
-    return;
-  }
-
-  // For add_to_cart: open Amazon cart URL directly (instant), then ALSO
-  // launch the browser_task to demonstrate the autonomous agent action
-  if (platform === 'amazon') {
-    window.open(actionUrl, '_blank'); // open cart URL in new tab immediately
-  }
-
-  // Show the modal and launch the Anakin browser_task
-  openActionModal(productTitle, productUrl, platform, productId);
+  // Open the action URL directly — instant, no browser_task needed
+  window.open(actionUrl || productUrl, '_blank');
 }
 
 function openActionModal(title, url, platform, id) {
